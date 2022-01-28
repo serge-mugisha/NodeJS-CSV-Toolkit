@@ -1,0 +1,25 @@
+{
+  "name": "CST8333_Project1_By_SergeMugisha",
+  "version": "1.0.0",
+  "description": "NodeJS Research Assignment 1 by Serge M.",
+  "main": "app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "doc": "jsdoc -c jsdoc.conf.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/serge-mugisha/NodeJS-research-A1.git"
+  },
+  "author": "Serge Mugisha",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/serge-mugisha/NodeJS-research-A1/issues"
+  },
+  "homepage": "https://github.com/serge-mugisha/NodeJS-research-A1#readme",
+  "dependencies": {
+    "csv-parse": "^5.0.4",
+    "jsdoc": "^3.6.10",
+    "nodemon": "^2.0.15"
+  }
+}
