@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: views/mainView.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: views/mainView.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const prompt = require('prompt');
+const controller = require('../controllers/incidentController')
+
+// Constant variables holding menu options
+const RELOAD_FILE = 1
+const SAVE_FILE = 2
+const VIEW_RECORDS = 3
+const VIEW_RECORD = 4
+const ADD_RECORD = 5
+const EDIT_RECORD = 6
+const DELETE_RECORD = 7
+const EXIT_PROGRAM = 0
+
+// const recordSkeleton = ['incidentNumber', 'incidentType', 'reportedDate', 'nearestPopulatedCentre', 'province', 'company', 'substance', 'significant', 'whatHappenedCategory']
+// var recordSchema = {
+//     properties: {
+//         incidentNumber: { pattern: /^[a-zA-Z0-9_]+$/, message: 'Incident Number', required: true },
+//         incidentType: { pattern: /^[a-zA-Z0-9_]+$/, message: 'Incident Type', required: true },
+//         reportedDate: { pattern: /^[a-zA-Z0-9_]+$/, message: 'Reported Date', required: true },
+//         nearestPopulatedCentre: { pattern: /^[a-zA-Z0-9_]+$/, message: 'Nearest Populated Centre', required: true },
+//         province: { pattern: /^[a-zA-Z0-9_]+$/, message: 'Province', required: true },
+//         company: { pattern: /^[a-zA-Z0-9_]+$/, message: 'Company', required: true },
+//         substance: { pattern: /^[a-zA-Z0-9_]+$/, message: 'Substance', required: true },
+//         significant: { pattern: /^[a-zA-Z0-9_]+$/, message: 'Significant', required: true },
+//         whatHappenedCategory: { pattern: /^[a-zA-Z0-9_]+$/, message: 'What Happened Category', required: true },
+//     }
+// };
+
+/** 
+ * Holds a boolean value to ckeck if the program should keep running, or exit
+ * @type {Number}
+*/
+let reloadMenu = true;
+/** 
+ * Holds a single incident object to be used on user inputs and switch cases.
+ * @type {Number}
+*/
+let incident;
+
+/**
+ * This function outputs the menu to the screen.
+ * @function
+*/
+const menu = () => {
+    console.log("Please choose one of the following options\n", "===============================================")
+    console.log(`${RELOAD_FILE} Reload the CSV from disk \n${SAVE_FILE} Save current data to the CSV \n${VIEW_RECORDS} View a set of records,\n${VIEW_RECORD} View one record
+    \n${ADD_RECORD} Add a new record \n${EDIT_RECORD} Edit a record \n${DELETE_RECORD} Delete a record \n${EXIT_PROGRAM} Exit the Program
+    \n===============================================`);
+}
+
+/**
+ * This is the menu system
+ * Accepts user input and calls related controller function to handle the operation
+ * @function
+*/
+const menuSystem = async () => {
+
+    // Load the csv file before doing anything.
+    controller.loadFile(async (res) => {
+        if (res.status == 200) {
+            console.log(res.message)
+            while (reloadMenu) {
+                menu()
+                // start the prompt module for user
+                prompt.start()
+                const { choice } = await prompt.get(['choice']);
+
+                switch (Number(choice)) {
+                    case RELOAD_FILE:
+                        controller.loadFile(async (res) => {
+                            if (res.status == 200) console.log(res.message)
+                        })
+                        break
+
+                    case SAVE_FILE:  //Done
+                        controller.saveFile()
+                        break
+
+                    case VIEW_RECORDS: //Done
+                        controller.viewRecords();
+                        break
+
+                    case VIEW_RECORD: //Done
+                        incident = await prompt.get(['incidentNumber']);
+                        controller.viewSingleRecord(incident.incidentNumber);
+                        break
+
+                    case ADD_RECORD:  //Done
+                        const { incidentNumber } = await prompt.get(['incidentNumber']);
+                        const { incidentType } = await prompt.get(['incidentType']);
+                        const { reportedDate } = await prompt.get(['reportedDate']);
+                        const { nearestPopulatedCentre } = await prompt.get(['nearestPopulatedCentre']);
+                        const { province } = await prompt.get(['province']);
+                        const { company } = await prompt.get(['company']);
+                        const { substance } = await prompt.get(['substance']);
+                        const { significant } = await prompt.get(['significant']);
+                        const { whatHappenedCategory } = await prompt.get(['whatHappenedCategory']);
+
+                        const record = [
+                            incidentNumber,
+                            incidentType,
+                            reportedDate,
+                            nearestPopulatedCentre,
+                            province,
+                            company,
+                            substance,
+                            significant,
+                            whatHappenedCategory
+                        ]
+                        console.log(record)
+                        controller.addRecord(record);
+                        break
+
+                    case EDIT_RECORD:  //Done
+                        incident = await prompt.get(['incidentNumber'])
+                        const index = controller.findRecord(incident.incidentNumber);
+                        if (index != null) {
+                            const { incidentNumber } = await prompt.get(['incidentNumber']);
+                            const { incidentType } = await prompt.get(['incidentType']);
+                            const { reportedDate } = await prompt.get(['reportedDate']);
+                            const { nearestPopulatedCentre } = await prompt.get(['nearestPopulatedCentre']);
+                            const { province } = await prompt.get(['province']);
+                            const { company } = await prompt.get(['company']);
+                            const { substance } = await prompt.get(['substance']);
+                            const { significant } = await prompt.get(['significant']);
+                            const { whatHappenedCategory } = await prompt.get(['whatHappenedCategory']);
+
+                            const record = [
+                                incidentNumber,
+                                incidentType,
+                                reportedDate,
+                                nearestPopulatedCentre,
+                                province,
+                                company,
+                                substance,
+                                significant,
+                                whatHappenedCategory
+                            ]
+                            controller.updateRecord(record, index);
+                        }
+                        else console.log("No record found matching: ", incident.incidentNumber)
+                        break
+
+                    case DELETE_RECORD:  //Done
+                        incident = await prompt.get(['incidentNumber'])
+                        const RecordIndex = controller.findRecord(incident.incidentNumber);
+                        if (RecordIndex != null) controller.deleteRecord(RecordIndex);
+                        else console.log("No record found matching: ", incident.incidentNumber)
+                        break
+
+                    case EXIT_PROGRAM: //Done
+                        console.log("Thanks for using the CSV Toolkit! - Program by Serge Mugisha")
+                        reloadMenu = false;
+                        break
+
+                    default:
+                        console.log(choice, "Is an invalid input!")
+                }
+            }
+        }
+    })
+
+
+}
+
+module.exports = {
+    menuSystem,
+}</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Incident.html">Incident</a></li></ul><h3>Global</h3><ul><li><a href="global.html#addRecord">addRecord</a></li><li><a href="global.html#columnNames">columnNames</a></li><li><a href="global.html#csvData">csvData</a></li><li><a href="global.html#deleteRecord">deleteRecord</a></li><li><a href="global.html#filePath">filePath</a></li><li><a href="global.html#fileSavePath">fileSavePath</a></li><li><a href="global.html#findRecord">findRecord</a></li><li><a href="global.html#incident">incident</a></li><li><a href="global.html#menu">menu</a></li><li><a href="global.html#menuSystem">menuSystem</a></li><li><a href="global.html#prepareRecords">prepareRecords</a></li><li><a href="global.html#reloadMenu">reloadMenu</a></li><li><a href="global.html#updateRecord">updateRecord</a></li><li><a href="global.html#viewRecords">viewRecords</a></li><li><a href="global.html#viewSingleRecord">viewSingleRecord</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.10</a> on Tue Feb 15 2022 18:37:41 GMT-0500 (Eastern Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

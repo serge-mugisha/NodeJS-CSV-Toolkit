@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: controllers/incidentController.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: controllers/incidentController.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const fs = require('fs')
+const path = require('path')
+const { parse } = require('csv-parse')
+const { stringify } = require('csv-stringify/sync')
+const Incident = require('../models/Incident')
+
+/** 
+ * This variable stores the original csv dataset location
+ *  @type {String}
+*/
+const filePath = path.join(__dirname, '../../PICD.csv')
+/** 
+ * This variable stores the final csv location.
+ * @type {String}
+*/
+const fileSavePath = path.join(__dirname, '../../PICD_New.csv')
+/** 
+ * This variable stores the parsed and filtered incident records.
+ * @type {Array&lt;object>}
+*/
+var csvData = []
+/** 
+ * This variable stores the dataset Column names.
+ * @type {Array&lt;string>}
+*/
+const columnNames = ['Incident Number', 'Incident Types', 'Reported Date', 'Nearest Populated Centre', 'Province', 'Company', 'Substance', 'Significant', 'What Happened Category']
+
+
+const loadFile = (response) => {
+    // Open IO and get data stream from the file
+    try {
+        console.log("Opening file IO with Nodejs fs API module and reading the file at path: ", filePath, "\n -- Program by Serge Mugisha -- \n")
+        /** 
+         * This variable stores the data stream of the file
+         * @type {string}
+        */
+        var dataStream = fs.readFileSync(filePath)
+
+        // Parse the CSV, select few records, and filter desired columns and execute the callback after processing
+        prepareRecords(dataStream, (results) => {
+            if (results.length !== 0)
+                response({ status: 200, message: "CSV File Loaded Successfully" })
+            else
+                response({ status: 500, message: "An error occured while reading the csv" })
+        });
+
+    } catch (err) {
+        // Catch thrown error and check if it's error code matches ENOENT (Error No Entry/Entity)
+        if (err.code === 'ENOENT') {
+            console.log('File not found. Please specify a correct path to the file!');
+            console.log(err)
+        } else {
+            // Log all other thrown errors here 
+            console.log(err.message);
+        }
+    }
+}
+
+const saveFile = () => {
+    try {
+        // use the Stringify module to convert an array of objects into a string of comma separated values (csv)
+        var csvStream = stringify(csvData);
+
+        // use the Stringify module to conver an array of columns into a string of comma separated values (csv)
+        var colNames = stringify([columnNames]);
+
+        // concatenating columns with final dataset to form one string.
+        const dataStream = colNames + csvStream;
+
+        // Writting our string data to a file with fs module
+        fs.writeFileSync(fileSavePath, dataStream)
+        console.log("File saved Successfully at ", fileSavePath);
+    } catch (err) {
+        console.error(err)
+    }
+}
+
+/**
+ * This function finds a record in an array of objects matching the passed ID
+ * Returns the object index if found, or null if not found.
+ * @function
+ * @param {string} id - Holds the id to be searched against
+*/
+const findRecord = (id) => {
+    // Using the js array builtin fx to find an object whose incidentNumber matches the passed id
+    let record = csvData.find(rec => rec.incidentNumber == id);
+    if (record) return csvData.indexOf(record)
+    else return null
+}
+
+/**
+ * This function loops on the array of objects and log them on the screen
+ * Returns the object index if found, or null if not found.
+ * @function
+*/
+const viewRecords = () => {
+    for (var record in csvData) {
+        console.log(csvData[record]);
+    }
+    console.log('========================== End of Records ==========================')
+}
+
+/**
+ * This function logs the object matching the passed ID
+ * @function
+ * @param {string} id - Holds the id to be searched against
+*/
+const viewSingleRecord = (id) => {
+    const index = findRecord(id)
+    if (index != null) {
+        console.log("Search results for ", id)
+        console.log(csvData[index])
+    }
+    else {
+        console.log("No result matching incident number: ", id)
+    }
+}
+
+/**
+ * This function logs the object matching the passed ID
+ * @function
+ * @param {string} id - Holds the id to be searched against
+*/
+const addRecord = (record) => {
+    var newIncindent = new Incident(...record)
+    csvData.push(newIncindent);
+    console.log(newIncindent);
+}
+
+/**
+ * This function updates the array of objects, replacing a given object with new data
+ * @function
+ * @param {string} record - Holds the new record object to update
+ * @param {string} index - Holds the index of the object to be updated in the array
+*/
+const updateRecord = (record, index) => {
+    var updatedIncindent = new Incident(...record)
+    csvData.splice(index, 1, updatedIncindent);
+    console.log("Incident Updated Successfully!")
+}
+
+/**
+ * This removes the object at a passed index from the dataset array
+ * @function
+ * @param {string} index - Holds the index of the object to be deleted in the array
+*/
+const deleteRecord = (index) => {
+    csvData.splice(index, 1)
+    console.log("Record Deleted Successfully!")
+}
+
+
+/**
+ * This function Parses passed csv file stream to an array of arrays as rows
+ * @function
+ * @param {string} dataStream - Holds the file stream to be parsed and prepared
+ * @param {function} callBack - Callback function to be executed after processing the data
+*/
+function prepareRecords(dataStream, callBack) {
+    try {
+        // Parse the CSV dataStream to an array of rows, filter needed columns, create Incident objects, and store them in a Data Structure.
+        console.log("Parsing the stored CSV data stream to an array of rows \n -- Program by Serge Mugisha -- \n")
+
+        parse(dataStream, { columns: false, trim: true }, (err, rows) => {
+            if (err) throw new Error("Error parsing file!", err)
+            /** 
+             * Stores parsed incident records from the csv file
+             * @type {Array&lt;string>} 
+             */
+            var parsedData = []
+            // Select the first 5 rows from the csv exclusing column names
+            console.log("Storing the first 5 records of the dataset (excluding column names) in a separate array. \n -- Program by Serge Mugisha -- \n")
+            for (var i = 1; i &lt;= 5; i++) {
+                parsedData.push(rows[i])
+            }
+
+            // Filter the columns from selected rows and create an object for each record
+            console.log("Filtering columns from selected rows and creating an object for each record. \n -- Program by Serge Mugisha -- \n")
+            for (var i = 0; i &lt; 5; i++) {
+                /** 
+                 * Stores individual record after filtering needed columns from the original data.
+                 * @type {Array&lt;string>}
+                */
+                var record = []
+                var columnIndexes = [0, 1, 2, 3, 4, 5, 10, 12, 17];
+                // Iterate on the columnIndexes and push the reacord matching each index to the new array
+                columnIndexes.map(index => record.push(parsedData[i][index]))
+
+                /** 
+                 * Stores Incident record object instance after filtering needed columns from the original record.
+                 * @type {object}
+                */
+                var incindent = new Incident(record[0], record[1], record[2], record[3], record[4], record[5], record[6], record[7], record[8])
+
+                // Add the new created incident object in the array
+                csvData.push(incindent)
+            }
+
+            // return prepared data
+            callBack(csvData);
+        })
+    } catch (err) {
+        // Log thrown parsing errors here. 
+        console.log(err.message);
+    }
+}
+
+
+module.exports = {
+    loadFile,
+    saveFile,
+    viewRecords,
+    findRecord,
+    viewSingleRecord,
+    addRecord,
+    updateRecord,
+    deleteRecord,
+}</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Incident.html">Incident</a></li></ul><h3>Global</h3><ul><li><a href="global.html#addRecord">addRecord</a></li><li><a href="global.html#columnNames">columnNames</a></li><li><a href="global.html#csvData">csvData</a></li><li><a href="global.html#deleteRecord">deleteRecord</a></li><li><a href="global.html#filePath">filePath</a></li><li><a href="global.html#fileSavePath">fileSavePath</a></li><li><a href="global.html#findRecord">findRecord</a></li><li><a href="global.html#incident">incident</a></li><li><a href="global.html#menu">menu</a></li><li><a href="global.html#menuSystem">menuSystem</a></li><li><a href="global.html#prepareRecords">prepareRecords</a></li><li><a href="global.html#reloadMenu">reloadMenu</a></li><li><a href="global.html#updateRecord">updateRecord</a></li><li><a href="global.html#viewRecords">viewRecords</a></li><li><a href="global.html#viewSingleRecord">viewSingleRecord</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.10</a> on Tue Feb 15 2022 18:37:41 GMT-0500 (Eastern Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
