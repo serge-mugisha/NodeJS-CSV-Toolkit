@@ -1,4 +1,4 @@
-## Instructions
+## A1 Instructions
 - Create a record object (also known as entity object, data-transfer object) that uses the column
   names from the dataset as part of the source code, e.g. variable names, accessors/mutators names, or constants.
 
@@ -12,7 +12,7 @@
 
 - Use JSDoc to document your code
 
-### Progeamming Concepts
+### A1 Progeamming Concepts
 
 - variables
 - methods
@@ -21,6 +21,35 @@
 - exception handling
 - use of an API library
 - an array (simiral data structure)
+================================================================================================
+
+## A2 Instructions
+
+- Reload the data from the dataset, replacing the in-memory data
+- Persist the data from memory to the disk as a comma-separated file, writing to a new file
+- Select and display either one record, or display multiple records from the in-memory data. 
+- Create a new record and store it in the simple data structure in memory
+- Select and edit a record held in the simple data structure in memory
+- Select and delete a record from the simple data structure in memory
+
+** Names in your Docs
+
+** Single unit test about one of the follo:
+- Does the program read in records, placing data into correct fields of record objects? 
+- Does the program add a new record into the sequential data structure? 
+- Does the program update a record in the sequential data structure as expected? 
+- Does the program remove a record from the sequential data structure as expected?
+- Does the program catch any exceptions or errors if the file is missing?
+### A2 Progeamming Concepts
+
+- decision structure
+- File-IO reading from the dataset
+- File-IO writing a csv file
+- exception handling
+- use of an API library
+- an array (or similar data structure)
+- unit testing
+- N-Layered or MVC architecture. 
 
 
 
