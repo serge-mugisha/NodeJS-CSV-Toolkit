@@ -11,11 +11,12 @@ describe(
 
         /** Test case description */
         it("The function should find a record and return its index or null if not found", () => {
-            /** Tests if the function finds the record and returns the correct index */
+            /** Tests if the function finds the record and returns the corresponding map key */
             var index = app.findRecord('INC2007-098')
-            expect(index).toBe(1)
+            expect(index).toBe('INC2007-098')
 
             /** Tests if the function returns null in case no record matching the given id is found */
+            console.log("Testing the findRecord() controller function...    By Serge Mugisha")
             index = app.findRecord('invalid')
             expect(index).toBe(null)
         })
