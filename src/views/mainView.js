@@ -15,6 +15,7 @@ const ADD_RECORD = 5
 const EDIT_RECORD = 6
 const DELETE_RECORD = 7
 const SORT_DATASET = 8
+const GRAPH_DATASET = 9
 const EXIT_PROGRAM = 0
 
 /** 
@@ -33,10 +34,11 @@ let incident;
  * @function
 */
 const menu = () => {
-    console.log("Please choose one of the following options \n## Program by Serge Mugisha ##\n", "===============================================")
+    console.log("Please choose one of the following options \n", "===============================================")
     console.log(`${RELOAD_FILE} Reload the CSV from disk \n${SAVE_FILE} Save current data to the CSV \n${VIEW_RECORDS} View a set of records,\n${VIEW_RECORD} View one record
-    \n${ADD_RECORD} Add a new record \n${EDIT_RECORD} Edit a record \n${DELETE_RECORD} Delete a record \n${SORT_DATASET} Sort Dataset \n${EXIT_PROGRAM} Exit the Program
-    \n===============================================`);
+    \n${ADD_RECORD} Add a new record \n${EDIT_RECORD} Edit a record \n${DELETE_RECORD} Delete a record 
+    \n${SORT_DATASET} Sort Dataset based on Column (1-9) \n${GRAPH_DATASET} Graph Dataset on Bar Graph based on Column (2-9) \n${EXIT_PROGRAM} Exit the Program
+    \n=============================================== \n## Program by Serge Mugisha ##`);
 }
 
 /**
@@ -65,6 +67,7 @@ const menuSystem = async () => {
 
             case VIEW_RECORDS:
                 const records = controller.viewRecords();
+
                 for (const [key, value] of records) {
                     console.log(value);
                 }
@@ -150,12 +153,18 @@ const menuSystem = async () => {
                 console.log(`Choose the column to sort on\n 1. Incident Number \n 2. Incident Types \n 3. Reported Date \n 4. Nearest Populated Centre
                 \n 5. Province \n 6. Company \n 7. Substance \n 8. Significant \n 9. What Happened Category`)
 
-                column = await prompt.get(['ColumnNumber'])
-                console.log(column.ColumnNumber)
-                if (1 <= column.ColumnNumber <= 9) {
-                    var sortedData = controller.sortDataset(column.ColumnNumber)
+                var column = await prompt.get(['ColumnNumber'])
+                if (1 <= column.ColumnNumber && column.ColumnNumber <= 9) {
+                    controller.sortDataset(column.ColumnNumber)
                     console.log("Data Sorted Successfully! \n");
                 }
+                else console.log("Invalid Column Selection.")
+                break
+
+            case GRAPH_DATASET:
+                col = await prompt.get(['columnNumber'])
+
+                if (2 <= col.columnNumber && col.columnNumber <= 9) controller.graphDataset(col.columnNumber) 
                 else console.log("Invalid Column Selection.")
                 break
 

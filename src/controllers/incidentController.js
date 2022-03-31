@@ -8,6 +8,7 @@ const path = require('path')
 const { parse } = require('csv-parse/sync')
 const { stringify } = require('csv-stringify/sync')
 const Incident = require('../models/Incident')
+const { bar, bg, fg } = require('ervy')
 
 /** 
  * This variable stores the original csv dataset location
@@ -21,12 +22,10 @@ const filePath = path.join(__dirname, '../../PICD.csv')
 const fileSavePath = path.join(__dirname, '../../PICD_New.csv')
 
 
-
 /** 
  * This variable stores the parsed and filtered incident records.
  * @type {Map<object>}
  */
-// ====================================================================================
 var csvData = new Map()
 
 /** 
@@ -52,8 +51,8 @@ const loadFile = async () => {
 
         // Filter the columns from selected rows and create an object for each record
         console.log("Filtering columns from selected rows and creating an object for each record.")
-        // for (var i = 1; i < 10; i++) {
-        for (var i = 0; i < rows.length; i++) {
+        // for (var i = 1; i < rows.length; i++) {
+        for (var i = 1; i < 20; i++) {
             /** 
              * Stores individual record after filtering needed columns from the original data.
              * @type {Array<string>}
@@ -193,6 +192,48 @@ const sortDataset = (column) => {
     }
 }
 
+/**
+ * This function graphs the passed column on a horizontal bar chart
+ * @function
+ * @param {Number} column - Holds the Column number to graph
+*/
+const graphDataset = (column) => {
+    /** Convert the passed value into an Int data type */
+    var colIndex = parseInt(column) - 1
+    var colNames = ['incidentNumber', 'incidentType', 'reportedDate', 'nearestPopulatedCentre', 'province', 'company', 'substance', 'significant', 'whatHappenedCategory']
+    /**  Get the column name based on passed column number */
+    var colName = colNames[colIndex]
+
+    /**  Select all values of selected column */
+    var selectedCol = [];
+    for (const [key, value] of csvData) {
+        selectedCol.push({ key, value: value[colName] });
+    }
+
+    /**  Hold column's unique values */
+    var filteredCol = selectedCol.map(item => item.value).filter((value, index, self) => self.indexOf(value) === index)
+
+    /**  A list of colors to use on the bar chart to make it pop and easy to read */
+    var chartColors = ['red', 'green', 'yellow', 'blue', 'magenta', 'cyan']
+
+    /**  Set each value the number of times it appears in the column */
+    var label_X_counts = []
+    for (var index in filteredCol) {
+        /**  If the Key Contains spaces (It will look long on the chart), Make it's abreviation and use it on the Bar graph. */
+        var key = filteredCol[index].indexOf(' ') >= 0 ? filteredCol[index].match(/[A-Z]/g).join('') : filteredCol[index]
+
+        /**  The the count each column's record has in the dataset */
+        var value = selectedCol.filter((obj) => obj.value === filteredCol[index]).length
+
+        /**  Generate random bar colors to make it easy to differentiate bars */
+        var color = chartColors[(Math.floor((Math.random() * 6) + 1) - 1)]
+
+        label_X_counts.push({ key, value, style: bg(color) })
+    }
+
+    console.log(bar(label_X_counts, { padding: 10 }))
+}
+
 module.exports = {
     loadFile,
     saveFile,
@@ -203,4 +244,5 @@ module.exports = {
     updateRecord,
     deleteRecord,
     sortDataset,
+    graphDataset,
 }

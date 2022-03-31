@@ -58,6 +58,10 @@
 - Write a single unit-test using a testing framework to test your new advanced topic (If using a sorting algorithm, did the program sort the records correctly)
 
 
+## A4 Instructions
+
+- Horizontal Bar Chart
+- The user must be able to interact with the program at run time to customize the output (what parts of the data to chart on)
 
 ** pipeline-incidents-comprehensive-data
 
