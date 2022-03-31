@@ -5,7 +5,6 @@
 */
 const prompt = require('prompt');
 const controller = require('../controllers/incidentController');
-const Incident = require('../models/Incident');
 
 // Constant variables holding menu options
 const RELOAD_FILE = 1
@@ -15,6 +14,8 @@ const VIEW_RECORD = 4
 const ADD_RECORD = 5
 const EDIT_RECORD = 6
 const DELETE_RECORD = 7
+const SORT_DATASET = 8
+const GRAPH_DATASET = 9
 const EXIT_PROGRAM = 0
 
 /** 
@@ -24,7 +25,7 @@ const EXIT_PROGRAM = 0
 let reloadMenu = true;
 /** 
  * Holds a single incident object to be used on user inputs and switch cases.
- * @type {Number}
+ * @type {Incident}
 */
 let incident;
 
@@ -33,9 +34,9 @@ let incident;
  * @function
 */
 const menu = () => {
-    console.log("Please choose one of the following options\n", "===============================================")
+    console.log("Please choose one of the following options \n## Program by Serge Mugisha ##\n", "===============================================")
     console.log(`${RELOAD_FILE} Reload the CSV from disk \n${SAVE_FILE} Save current data to the CSV \n${VIEW_RECORDS} View a set of records,\n${VIEW_RECORD} View one record
-    \n${ADD_RECORD} Add a new record \n${EDIT_RECORD} Edit a record \n${DELETE_RECORD} Delete a record \n${EXIT_PROGRAM} Exit the Program
+    \n${ADD_RECORD} Add a new record \n${EDIT_RECORD} Edit a record \n${DELETE_RECORD} Delete a record \n${SORT_DATASET} Sort Dataset based on Column (1-9) \n${GRAPH_DATASET} Graph Dataset on Bar Graph based on Column (2-9) \n${EXIT_PROGRAM} Exit the Program
     \n===============================================`);
 }
 
@@ -55,23 +56,24 @@ const menuSystem = async () => {
         const { choice } = await prompt.get(['choice']);
 
         switch (Number(choice)) {
-            case RELOAD_FILE: //Done
+            case RELOAD_FILE:
                 controller.loadFile()
                 break
 
-            case SAVE_FILE:  //Done
+            case SAVE_FILE:
                 controller.saveFile()
                 break
 
-            case VIEW_RECORDS: //Done
+            case VIEW_RECORDS:
                 const records = controller.viewRecords();
-                for (var item in records) {
-                    console.log(records[item]);
+
+                for (const [key, value] of records) {
+                    console.log(value);
                 }
                 console.log('========================== End of Records ========================== \n-- Program by Serge Mugisha --')
                 break
 
-            case VIEW_RECORD: //Done
+            case VIEW_RECORD:
                 incident = await prompt.get(['incidentNumber']);
                 const result = controller.viewSingleRecord(incident.incidentNumber);
                 if (result != null) {
@@ -83,7 +85,7 @@ const menuSystem = async () => {
                 }
                 break
 
-            case ADD_RECORD:  //Done
+            case ADD_RECORD:
                 const { incidentNumber } = await prompt.get(['incidentNumber']);
                 const { incidentType } = await prompt.get(['incidentType']);
                 const { reportedDate } = await prompt.get(['reportedDate']);
@@ -105,14 +107,15 @@ const menuSystem = async () => {
                     significant,
                     whatHappenedCategory
                 ]
-                controller.addRecord(record);
+                var addedRecord = controller.addRecord(record);
+                console.log("Record Added Sucessfully", addedRecord);
+
                 break
 
-            case EDIT_RECORD:  //Done
+            case EDIT_RECORD:
                 incident = await prompt.get(['incidentNumber'])
-                const index = controller.findRecord(incident.incidentNumber);
-                if (index != null) {
-                    const { incidentNumber } = await prompt.get(['incidentNumber']);
+                const key = controller.findRecord(incident.incidentNumber);
+                if (key != null) {
                     const { incidentType } = await prompt.get(['incidentType']);
                     const { reportedDate } = await prompt.get(['reportedDate']);
                     const { nearestPopulatedCentre } = await prompt.get(['nearestPopulatedCentre']);
@@ -123,7 +126,7 @@ const menuSystem = async () => {
                     const { whatHappenedCategory } = await prompt.get(['whatHappenedCategory']);
 
                     const record = [
-                        incidentNumber,
+                        key,
                         incidentType,
                         reportedDate,
                         nearestPopulatedCentre,
@@ -133,19 +136,41 @@ const menuSystem = async () => {
                         significant,
                         whatHappenedCategory
                     ]
-                    controller.updateRecord(record, index);
+                    controller.updateRecord(record, key);
                 }
                 else console.log("No record found matching: ", incident.incidentNumber)
                 break
 
-            case DELETE_RECORD:  //Done
+            case DELETE_RECORD:
                 incident = await prompt.get(['incidentNumber'])
-                const RecordIndex = controller.findRecord(incident.incidentNumber);
-                if (RecordIndex != null) controller.deleteRecord(RecordIndex);
+                const RecordKey = controller.findRecord(incident.incidentNumber);
+                if (RecordKey != null) controller.deleteRecord(RecordKey);
                 else console.log("No record found matching: ", incident.incidentNumber)
                 break
 
-            case EXIT_PROGRAM: //Done
+            case SORT_DATASET:
+                console.log(`Choose the column to sort on\n 1. Incident Number \n 2. Incident Types \n 3. Reported Date \n 4. Nearest Populated Centre
+                \n 5. Province \n 6. Company \n 7. Substance \n 8. Significant \n 9. What Happened Category`)
+
+                var column = await prompt.get(['ColumnNumber'])
+                if (1 <= col.column && col.column <= 9) {
+                    controller.sortDataset(column.ColumnNumber)
+                    console.log("Data Sorted Successfully! \n");
+                }
+                else console.log("Invalid Column Selection.")
+                break
+
+            case GRAPH_DATASET:
+                // console.log(`Choose the column to Plot on the Bar Chart \n 2. Incident Types \n 3. Reported Date \n 4. Nearest Populated Centre
+                // \n 5. Province \n 6. Company \n 7. Substance \n 8. Significant \n 9. What Happened Category`)
+
+                col = await prompt.get(['columnNumber'])
+
+                if (2 <= col.columnNumber && col.columnNumber <= 9) controller.graphDataset(col.columnNumber) 
+                else console.log("Invalid Column Selection.")
+                break
+
+            case EXIT_PROGRAM:
                 console.log("Thanks for using the CSV Toolkit! - Program by Serge Mugisha")
                 reloadMenu = false;
                 break

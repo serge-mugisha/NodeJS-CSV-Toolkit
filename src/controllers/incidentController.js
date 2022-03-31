@@ -8,6 +8,7 @@ const path = require('path')
 const { parse } = require('csv-parse/sync')
 const { stringify } = require('csv-stringify/sync')
 const Incident = require('../models/Incident')
+const { bar, bg, fg } = require('ervy')
 
 /** 
  * This variable stores the original csv dataset location
@@ -19,16 +20,22 @@ const filePath = path.join(__dirname, '../../PICD.csv')
  * @type {String}
 */
 const fileSavePath = path.join(__dirname, '../../PICD_New.csv')
+
+
+
 /** 
  * This variable stores the parsed and filtered incident records.
- * @type {Array<object>}
-*/
-var csvData = []
+ * @type {Map<object>}
+ */
+// ====================================================================================
+var csvData = new Map()
+
 /** 
  * This variable stores the dataset Column names.
- * @type {Array<string>}
-*/
+ * @type {Map<string>}
+ */
 const columnNames = ['Incident Number', 'Incident Types', 'Reported Date', 'Nearest Populated Centre', 'Province', 'Company', 'Substance', 'Significant', 'What Happened Category']
+var columnIndexes = [0, 1, 2, 3, 4, 5, 10, 12, 17];
 
 const loadFile = async () => {
     // Open IO and get data stream from the file
@@ -43,31 +50,19 @@ const loadFile = async () => {
         // Parse the CSV, select few records, and filter desired columns and execute the callback after processing
         console.log("Parsing the stored CSV data stream to an array of rows \n -- Program by Serge Mugisha -- \n")
         const rows = parse(dataStream, { columns: false, trim: true });
-        
-        /** 
-         * Stores parsed incident records from the csv file
-         * @type {Array<string>} 
-        */
-        var parsedData = []
-        
-        // Select the first 100 rows from the csv exclusing column names
-        console.log("Storing the first 100 records of the dataset (excluding column names) in a separate array. \n -- Program by Serge Mugisha -- \n")
-        for (var i = 1; i <= 100; i++) {
-            parsedData.push(rows[i])
-        }
 
         // Filter the columns from selected rows and create an object for each record
-        console.log("Filtering columns from selected rows and creating an object for each record. \n -- Program by Serge Mugisha -- \n")
-        for (var i = 0; i < 100; i++) {
+        console.log("Filtering columns from selected rows and creating an object for each record.")
+        // for (var i = 1; i < rows.length; i++) {
+            for (var i = 1; i < 20; i++) {
             /** 
              * Stores individual record after filtering needed columns from the original data.
              * @type {Array<string>}
             */
             var record = []
-            var columnIndexes = [0, 1, 2, 3, 4, 5, 10, 12, 17];
-            
-            // Iterate on the columnIndexes and push the reacord matching each index to the new array
-            columnIndexes.map(index => record.push(parsedData[i][index]))
+
+            // Iterate on the columnIndexes and push the reacord matching each key to the new array
+            columnIndexes.map(key => record.push(rows[i][key]))
 
             /** 
              * Stores Incident record object instance after filtering needed columns from the original record.
@@ -75,11 +70,11 @@ const loadFile = async () => {
             */
             var incindent = new Incident(record[0], record[1], record[2], record[3], record[4], record[5], record[6], record[7], record[8])
 
-            // Add the new created incident object in the array
-            csvData.push(incindent)
+            // Add the new created incident object on the Map
+            csvData.set(incindent.incidentNumber, incindent)
         }
         console.log("CSV File Loaded Successfully")
-        
+
     } catch (err) {
         // Catch thrown error and check if it's error code matches ENOENT (Error No Entry/Entity)
         if (err.code === 'ENOENT') {
@@ -94,8 +89,11 @@ const loadFile = async () => {
 
 const saveFile = () => {
     try {
+
         // use the Stringify module to convert an array of objects into a string of comma separated values (csv)
-        var csvStream = stringify(csvData);
+        var data = [];
+        csvData.forEach((value) => data.push(value))
+        var csvStream = stringify(data);
 
         // use the Stringify module to conver an array of columns into a string of comma separated values (csv)
         var colNames = stringify([columnNames]);
@@ -113,20 +111,20 @@ const saveFile = () => {
 
 /**
  * This function finds a record in an array of objects matching the passed ID
- * Returns the object index if found, or null if not found.
+ * Returns the object key if found, or null if not found.
  * @function
  * @param {string} id - Holds the id to be searched against
 */
 const findRecord = (id) => {
-    // Using the js array builtin fx to find an object whose incidentNumber matches the passed id
-    let record = csvData.find(rec => rec.incidentNumber == id);
-    if (record) return csvData.indexOf(record)
+    let result = csvData.has(id);
+    if (result) return csvData.get(id).incidentNumber
     else return null
 }
 
+// ====================================================================================
 /**
  * This function loops on the array of objects and log them on the screen
- * Returns the object index if found, or null if not found.
+ * Returns the object key if found, or null if not found.
  * @function
 */
 const viewRecords = () => csvData;
@@ -137,8 +135,9 @@ const viewRecords = () => csvData;
  * @param {string} id - Holds the id to be searched against
 */
 const viewSingleRecord = (id) => {
-    const index = findRecord(id)
-    if (index != null) return csvData[index]
+    // const key = findRecord(id)
+    let result = csvData.has(id)
+    if (result != null) return csvData.get(id)
     else return null
 }
 
@@ -149,30 +148,84 @@ const viewSingleRecord = (id) => {
 */
 const addRecord = (record) => {
     var newIncindent = new Incident(...record)
-    csvData.push(newIncindent);
-    console.log("Record Added Sucessfully", newIncindent);
+    csvData.set(newIncindent.incidentNumber, newIncindent);
+    return newIncindent;
 }
 
 /**
  * This function updates the array of objects, replacing a given object with new data
  * @function
  * @param {string} record - Holds the new record object to update
- * @param {string} index - Holds the index of the object to be updated in the array
+ * @param {string} key - Holds the key of the object to be updated in the array
 */
-const updateRecord = (record, index) => {
+const updateRecord = (record, key) => {
     var updatedIncindent = new Incident(...record)
-    csvData.splice(index, 1, updatedIncindent);
+    csvData.set(key, updatedIncindent);
     console.log("Incident Updated Successfully!")
 }
 
 /**
- * This removes the object at a passed index from the dataset array
+ * This removes the object at a passed key from the dataset array
  * @function
- * @param {string} index - Holds the index of the object to be deleted in the array
+ * @param {string} key - Holds the key of the object to be deleted in the array
 */
-const deleteRecord = (index) => {
-    csvData.splice(index, 1)
+const deleteRecord = (key) => {
+    csvData.delete(key)
     console.log("Record Deleted Successfully!")
+}
+
+/**
+ * This function Sorts the dataset by passed column number
+ * @function
+ * @param {Number} column - Holds the Column number to sort on
+*/
+const sortDataset = (column) => {
+    var colIndex = parseInt(column) - 1
+    var colNames = ['incidentNumber', 'incidentType', 'reportedDate', 'nearestPopulatedCentre', 'province', 'company', 'substance', 'significant', 'whatHappenedCategory']
+    var colName = colNames[colIndex]
+    if (0 <= column <= 8) {
+        // Sort function comparing keys with key1 key2 or values with val1[colName] val2[colName]
+        var sorted = [...csvData].sort(([key1, val1], [key2, val2]) => val1[colName].localeCompare(val2[colName]));
+        csvData = new Map(sorted)
+        return csvData
+    }
+    else {
+        console.log("Invalid column")
+    }
+}
+
+const graphDataset = (column) => {
+    var colIndex = parseInt(column) - 1
+    var colNames = ['incidentNumber', 'incidentType', 'reportedDate', 'nearestPopulatedCentre', 'province', 'company', 'substance', 'significant', 'whatHappenedCategory']
+    var colName = colNames[colIndex]
+
+    var chartColors = ['red', 'green', 'yellow', 'blue', 'magenta', 'cyan']
+
+    // Contains the selected column
+    var selectedCol = [];
+    for (const [key, value] of csvData) {
+        selectedCol.push({ key, value: value[colName] });
+    }
+
+    // Holds column's unique values
+    var filteredCol = selectedCol.map(item => item.value).filter((value, index, self) => self.indexOf(value) === index)
+
+
+    var counts = []
+    for (var index in filteredCol) {
+        // If the Key Contains spaces (It will look long on chart), Make it's abreviation.
+        var key = filteredCol[index].indexOf(' ') >= 0 ? filteredCol[index].match(/[A-Z]/g).join('') : filteredCol[index]
+
+        // The the count each column's record has in the dataset
+        var value = selectedCol.filter((obj) => obj.value === filteredCol[index]).length
+        
+        // Generate random bar colors to make it easy to differentiate bars
+        var color = chartColors[(Math.floor((Math.random() * 6) + 1) - 1)]
+
+        counts.push({ key, value, style: bg(color) })
+    }
+
+    console.log(bar(counts, { padding: 10 }))
 }
 
 module.exports = {
@@ -184,4 +237,6 @@ module.exports = {
     addRecord,
     updateRecord,
     deleteRecord,
+    sortDataset,
+    graphDataset,
 }

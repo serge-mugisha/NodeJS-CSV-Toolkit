@@ -32,8 +32,6 @@
 - Select and edit a record held in the simple data structure in memory
 - Select and delete a record from the simple data structure in memory
 
-** Names in your Docs
-
 ** Single unit test about one of the follo:
 - Does the program read in records, placing data into correct fields of record objects? 
 - Does the program add a new record into the sequential data structure? 
@@ -49,9 +47,21 @@
 - use of an API library
 - an array (or similar data structure)
 - unit testing
-- N-Layered or MVC architecture. 
+- N-Layered or MVC architecture.
+
+## A3 Instructions
+
+- Use a List, Set, or Tree (etc.) rather than a simple array
+- Sort the records in the data structure based on single column from the dataset. (You may use built-in API libraries to complete this task)
+- Offer the user the option to use this functionality
+- You must perform sorting using programming code (or an API call) and not an SQL statement sent into a database
+- Write a single unit-test using a testing framework to test your new advanced topic (If using a sorting algorithm, did the program sort the records correctly)
 
 
+## A4 Instructions
+
+- Horizontal Bar Chart
+- The user must be able to interact with the program at run time to customize the output (what parts of the data to chart on)
 
 ** pipeline-incidents-comprehensive-data
 
