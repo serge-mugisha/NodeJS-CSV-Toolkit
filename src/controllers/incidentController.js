@@ -8,6 +8,7 @@ const path = require('path')
 const { parse } = require('csv-parse/sync')
 const { stringify } = require('csv-stringify/sync')
 const Incident = require('../models/Incident')
+const { bar, bg, fg } = require('ervy')
 
 /** 
  * This variable stores the original csv dataset location
@@ -52,8 +53,8 @@ const loadFile = async () => {
 
         // Filter the columns from selected rows and create an object for each record
         console.log("Filtering columns from selected rows and creating an object for each record.")
-        // for (var i = 1; i < 10; i++) {
-        for (var i = 0; i < rows.length; i++) {
+        // for (var i = 1; i < rows.length; i++) {
+            for (var i = 1; i < 20; i++) {
             /** 
              * Stores individual record after filtering needed columns from the original data.
              * @type {Array<string>}
@@ -193,6 +194,40 @@ const sortDataset = (column) => {
     }
 }
 
+const graphDataset = (column) => {
+    var colIndex = parseInt(column) - 1
+    var colNames = ['incidentNumber', 'incidentType', 'reportedDate', 'nearestPopulatedCentre', 'province', 'company', 'substance', 'significant', 'whatHappenedCategory']
+    var colName = colNames[colIndex]
+
+    var chartColors = ['red', 'green', 'yellow', 'blue', 'magenta', 'cyan']
+
+    // Contains the selected column
+    var selectedCol = [];
+    for (const [key, value] of csvData) {
+        selectedCol.push({ key, value: value[colName] });
+    }
+
+    // Holds column's unique values
+    var filteredCol = selectedCol.map(item => item.value).filter((value, index, self) => self.indexOf(value) === index)
+
+
+    var counts = []
+    for (var index in filteredCol) {
+        // If the Key Contains spaces (It will look long on chart), Make it's abreviation.
+        var key = filteredCol[index].indexOf(' ') >= 0 ? filteredCol[index].match(/[A-Z]/g).join('') : filteredCol[index]
+
+        // The the count each column's record has in the dataset
+        var value = selectedCol.filter((obj) => obj.value === filteredCol[index]).length
+        
+        // Generate random bar colors to make it easy to differentiate bars
+        var color = chartColors[(Math.floor((Math.random() * 6) + 1) - 1)]
+
+        counts.push({ key, value, style: bg(color) })
+    }
+
+    console.log(bar(counts, { padding: 10 }))
+}
+
 module.exports = {
     loadFile,
     saveFile,
@@ -203,4 +238,5 @@ module.exports = {
     updateRecord,
     deleteRecord,
     sortDataset,
+    graphDataset,
 }
