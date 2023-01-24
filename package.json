@@ -1,7 +1,7 @@
 {
-  "name": "CST8333_Project1_By_SergeMugisha",
+  "name": "NodeJS CSV Toolkit",
   "version": "1.0.0",
-  "description": "NodeJS Research Assignment 1 by Serge M.",
+  "description": "NodeJS CSV Toolkit - CLI tool to work with CSV files",
   "main": "app.js",
   "scripts": {
     "start": "nodemon src/app.js",
@@ -10,14 +10,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/serge-mugisha/NodeJS-research-A1.git"
+    "url": "git+https://github.com/serge-mugisha/NodeJS-CSV-Toolkit.git"
   },
   "author": "Serge Mugisha",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/serge-mugisha/NodeJS-research-A1/issues"
+    "url": "https://github.com/serge-mugisha/NodeJS-CSV-Toolkit/issues"
   },
-  "homepage": "https://github.com/serge-mugisha/NodeJS-research-A1#readme",
+  "homepage": "https://github.com/serge-mugisha/NodeJS-CSV-Toolkit#readme",
   "dependencies": {
     "asciichart": "^1.5.25",
     "csv-parse": "^5.0.4",
