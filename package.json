@@ -1,5 +1,5 @@
 {
-  "name": "NodeJS CSV Toolkit",
+  "name": "nodejs-csv-toolkit",
   "version": "1.0.0",
   "description": "NodeJS CSV Toolkit - CLI tool to work with CSV files",
   "main": "app.js",
