@@ -16,7 +16,7 @@ describe(
             expect(index).toBe('INC2007-098')
 
             /** Tests if the function returns null in case no record matching the given id is found */
-            console.log("Testing the findRecord() controller function...    By Serge Mugisha")
+            console.log("Testing the findRecord() controller function...")
             index = app.findRecord('invalid')
             expect(index).toBe(null)
         })

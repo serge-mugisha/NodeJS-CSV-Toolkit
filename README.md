@@ -1,5 +1,7 @@
 # NodeJS CSV Toolkit
 
+![Tests](https://github.com/serge-mugisha/NodeJS-CSV-Toolkit/actions/workflows/tests.yml/badge.svg)
+
 A powerful command-line tool for working with CSV files, providing comprehensive data manipulation and visualization capabilities.
 
 ## Features

@@ -22,7 +22,7 @@ describe(
             sorted.set('INC2008-020', new Incident("INC2008-020", "Release of Substance", "03/03/2008", "Dryden", "Ontario", "TransCanada PipeLines Limited", "Natural Gas - Sweet", "No", "Corrosion and Cracking"))
 
             /** Tests if the function sorts data by reported date (column n0.3) and returns sorted dataset */
-            console.log("Testing the sortDataset() controller function...    By Serge Mugisha")
+            console.log("Testing the sortDataset() controller function...")
             var newDataset = app.sortDataset(3)
             expect(Array.from(newDataset)).toEqual(Array.from(sorted))
 
